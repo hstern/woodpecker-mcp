@@ -1,0 +1,47 @@
+{
+  "name": "woodpecker-mcp",
+  "module": "index.ts",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "WOODPECKER_URL=http://localhost:8000 bunx @modelcontextprotocol/inspector bun src/index.ts",
+    "lint": "ultracite check",
+    "lint:fix": "ultracite fix --unsafe",
+    "lint:ci": "biome ci .",
+    "build": "bun build --compile --minify-whitespace --minify-syntax --target node --outfile ./dist/woodpecker-mcp ./src/index.ts",
+    "release": "semantic-release"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.2.2",
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "@modelcontextprotocol/inspector": "^0.16.7",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^13.0.1",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^11.0.6",
+    "@semantic-release/release-notes-generator": "^14.1.0",
+    "@types/bun": "latest",
+    "commitizen": "^4.3.1",
+    "cz-conventional-changelog": "^3.3.0",
+    "lefthook": "^1.13.0",
+    "semantic-release": "^24.2.8",
+    "ultracite": "5.3.3"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.18.0",
+    "@t3-oss/env-core": "^0.13.8",
+    "ts-pattern": "^5.8.0",
+    "ts-results": "^3.3.0",
+    "zod": "^3.25.76"
+  }
+}

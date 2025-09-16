@@ -1,0 +1,38 @@
+pre-commit:
+  jobs:
+    - run: bun run lint:fix
+      glob:
+        - "*.js"
+        - "*.jsx"
+        - "*.ts"
+        - "*.tsx"
+        - "*.json"
+        - "*.jsonc"
+        - "*.css"
+      stage_fixed: true
+    - run: bun run build
+  parallel: true
+  skip:
+    - merge
+    - rebase
+
+# Build commit messages
+prepare-commit-msg:
+  commands:
+    commitzen:
+      skip:
+        - merge
+        - rebase
+      interactive: true
+      run: bunx cz --hook
+      env:
+        LEFTHOOK: 0
+
+# Validate commit messages
+commit-msg:
+  commands:
+    commitlint:
+      skip:
+        - merge
+        - rebase
+      run: bunx --bun commitlint --edit {1}
