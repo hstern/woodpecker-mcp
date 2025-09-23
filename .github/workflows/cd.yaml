@@ -43,6 +43,7 @@ jobs:
         id: prev-version
         run: |
           VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          VERSION=${VERSION#v}
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Semantic Release
@@ -58,6 +59,7 @@ jobs:
         id: version-check
         run: |
           VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          VERSION=${VERSION#v}
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
           if [ "${{ steps.prev-version.outputs.version }}" != "$VERSION" ]; then
