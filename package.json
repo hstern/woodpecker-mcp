@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "WOODPECKER_URL=http://localhost:8000 bunx @modelcontextprotocol/inspector bun src/index.ts",
     "lint": "ultracite check",
+    "test": "bun test",
     "lint:fix": "ultracite fix --unsafe",
     "lint:ci": "biome ci .",
     "build": "bun build --compile --minify-whitespace --minify-syntax --target node --outfile ./dist/woodpecker-mcp ./src/index.ts",

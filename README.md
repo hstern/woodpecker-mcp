@@ -80,6 +80,50 @@ Add to your MCP client configuration:
 3. Copy the personal access token
 4. Set it as `WOODPECKER_TOKEN`
 
+### HTTP Transport (self-hosted, multi-user)
+
+By default the server speaks MCP over **stdio**, which is right for a local
+client that spawns it as a subprocess. To host it once for multiple users, set
+**`LISTEN_ADDR`** and it runs as a [Streamable HTTP](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#streamable-http)
+endpoint instead:
+
+```bash
+WOODPECKER_URL="https://your-woodpecker-instance.com" \
+LISTEN_ADDR="0.0.0.0:8080" \
+woodpecker-mcp
+# MCP endpoint: POST http://0.0.0.0:8080/mcp
+```
+
+`LISTEN_ADDR` accepts `host:port`, `:port` (all interfaces), or a bare `port`.
+
+When `LISTEN_ADDR` is set, **`WOODPECKER_TOKEN` is optional**: each request
+authenticates with its own Woodpecker token, sent as a bearer header. The
+server holds no token of its own, so one deployment serves many users, each
+acting as themselves:
+
+```
+Authorization: Bearer <your-woodpecker-token>
+```
+
+Requests without a bearer token get `401`. (When `LISTEN_ADDR` is unset,
+`WOODPECKER_TOKEN` is required, as before — stdio has no per-request header.)
+
+The transport is **stateless** — every request is independent, so no session is
+established and only `POST /mcp` is served (`GET`/`DELETE` return `405`). Run it
+behind a reverse proxy that terminates TLS.
+
+Minimal HTTP client config:
+
+```json
+{
+  "woodpecker-ci": {
+    "type": "http",
+    "url": "https://your-woodpecker-mcp-host/mcp",
+    "headers": { "Authorization": "Bearer your-token-here" }
+  }
+}
+```
+
 ## API Reference
 
 | Tool | Description | Parameters |
@@ -109,6 +153,7 @@ bun run build        # Build production binary
 # Code Quality
 bun run lint         # Check code style
 bun run lint:fix     # Auto-fix issues
+bun run test         # Run unit tests
 ```
 
 ### Local Testing Environment

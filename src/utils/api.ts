@@ -1,8 +1,17 @@
+import { AsyncLocalStorage } from "node:async_hooks";
 import { Err, Ok, type Result } from "ts-results";
 import { env } from "@/env";
 import { ApiError } from "@/utils/error";
 
 const URL_REGEX = /\/$/;
+
+/**
+ * Per-request context for the HTTP transport. The bearer token sent on each
+ * request is stored here so the shared `apiClient` can act as the caller
+ * (multi-user, secretless server) without threading the token through every
+ * tool. Empty in stdio mode, where the client falls back to env.WOODPECKER_TOKEN.
+ */
+export const requestContext = new AsyncLocalStorage<{ token: string }>();
 
 export type WoodpeckerApiResponse<T> = {
   data?: T;
@@ -25,22 +34,31 @@ type Response<T> = Promise<Result<T, ApiError>>;
 
 export class WoodpeckerApiClient {
   private readonly baseUrl: string;
-  private readonly token: string;
 
   constructor() {
     this.baseUrl = `${env.WOODPECKER_URL.replace(URL_REGEX, "")}/api`;
-    this.token = env.WOODPECKER_TOKEN;
   }
 
   private async request<T>(
     endpoint: string,
     options: RequestOptions
   ): Response<T> {
+    // HTTP mode: the caller's bearer token (per request). stdio mode: env.
+    const token = requestContext.getStore()?.token ?? env.WOODPECKER_TOKEN;
+    if (!token) {
+      return Err(
+        new ApiError(
+          401,
+          "No Woodpecker token: set WOODPECKER_TOKEN (stdio) or send an Authorization: Bearer token (HTTP)."
+        )
+      );
+    }
+
     try {
       const response = await fetch(`${this.baseUrl}${endpoint}`, {
         method: options.method,
         headers: {
-          Authorization: `Bearer ${this.token}`,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
           ...options.headers,
         },
